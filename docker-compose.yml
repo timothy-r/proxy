@@ -1,0 +1,5 @@
+proxy:
+  image: timrodger/proxy
+  ports:
+    - "8008:80"
+

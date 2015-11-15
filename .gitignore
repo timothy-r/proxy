@@ -1,0 +1,7 @@
+vendor
+bin
+config
+*.swp
+.idea
+cache
+*.twig
