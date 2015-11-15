@@ -30,22 +30,33 @@ class Proxy
 
     /**
      *
-     * @param Request $req
+     * @param SymfonyRequest $req
      */
     public function fromRequest(SymfonyRequest $inbound)
     {
         $uri = $this->remote;
         // remove $this->path from $inbound ->path
         $pattern = '#^' . $this->path . '#';
-        $inbound_path = preg_replace($pattern, '', $inbound->getBasePath());
+        $inbound_path = preg_replace($pattern, '', $inbound->getRequestUri());
         $uri .= $inbound_path;
+
+        $headers = $inbound->headers->all();
+
+        unset($headers['host']);
+
+        if (($inbound->getMethod() === 'GET' || $inbound->getMethod() === 'HEAD')) {
+            unset($headers['content-type']);
+            unset($headers['content-length']);
+        }
 
         $outbound = new GuzzleRequest(
             $inbound->getMethod(),
             $uri,
-            $inbound->headers->all(),
-            $inbound->getContent()
+            $headers
         );
+//
+//            $inbound->getContent(true)
+//        );
 
         // make the proxy request to the configured remote server
         $client = new Client();
@@ -53,10 +64,15 @@ class Proxy
 
         // return a SymfonyResponse constructed from the GuzzleResponse
 
+        // remove x-frame options - or set them to all?
+        $response_headers = $response->getHeaders();
+        unset($response_headers['x-frame-options']);
+        unset($response_headers['X-FRAME-OPTIONS']);
+
         return new SymfonyResponse(
             $response->getBody(),
             $response->getStatusCode(),
-            $response->getHeaders()
+            $response_headers
         );
     }
 }
