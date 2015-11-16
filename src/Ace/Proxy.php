@@ -57,7 +57,8 @@ class Proxy
             $uri,
             [
                 'headers' => $headers,
-                'body' => $inbound->getContent(false)
+                'body' => $inbound->getContent(false),
+                'cookies' => $inbound->cookies->all()
             ]
         );
 
