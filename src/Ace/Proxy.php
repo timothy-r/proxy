@@ -2,6 +2,7 @@
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Message\Request as GuzzleRequest;
+use GuzzleHttp\Stream\Stream;
 
 use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
@@ -29,8 +30,8 @@ class Proxy
     }
 
     /**
-     *
-     * @param SymfonyRequest $req
+     * @param SymfonyRequest $inbound
+     * @return SymfonyResponse
      */
     public function fromRequest(SymfonyRequest $inbound)
     {
@@ -49,17 +50,17 @@ class Proxy
             unset($headers['content-length']);
         }
 
-        $outbound = new GuzzleRequest(
-            $inbound->getMethod(),
-            $uri,
-            $headers
-        );
-//
-//            $inbound->getContent(true)
-//        );
-
         // make the proxy request to the configured remote server
         $client = new Client();
+        $outbound = $client->createRequest(
+            $inbound->getMethod(),
+            $uri,
+            [
+                'headers' => $headers,
+                'body' => $inbound->getContent(false)
+            ]
+        );
+
         $response = $client->send($outbound);
 
         // return a SymfonyResponse constructed from the GuzzleResponse

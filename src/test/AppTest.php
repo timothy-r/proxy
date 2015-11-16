@@ -18,7 +18,7 @@ class AppTest extends WebTestCase
     public function testGetArt()
     {
         $this->givenAClient();
-        $this->client->request('GET', '/art');
+        $this->client->request('GET', '/art/');
 
         $this->thenTheResponseIsSuccess();
     }
